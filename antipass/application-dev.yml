@@ -1,0 +1,169 @@
+version: "1.0.0.20190403092100"
+version2: '{cipher}AQAV2O5e5LtQBOV5fHrHH8rdLtnwi4JZv7QrAhEffA/+2+2tL09+flkxqKaflvN0ZXO6z5QJbmxZ+Hl6rG/qNrvU9jtpOrdVfLgbfYx2EQnLOAte9C/Mao3oE6KQMP06d7Ouu7A0i5dTXQrE3QYf+vLugHQPZIlXE7IQ11BssOJZ5f3RHpPDvqgUtMwOCUnqIIE1tzeVmbNfnj5uI9/pPVkO2Cu3w7uztALP81vhpbCel5lv2gIuzCc2sjB6y8yFaakpLX8v8DpHP924ZB8Mx0z3QLZL+lx8BVtAHlqQRtxA1rxP8x/jN8W0KOQ1pPVQENR2SXspXH5AUkLKSdPdjCylSTEdL3M1eAbbsCIUfNhs3fVRlIa3EjFZ0S3UoT3Iy/A='
+#Tomcat
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    max-threads: 1000
+    min-spare-threads: 30
+  port: 8100
+  servlet:
+    context-path: /sscp-antipass
+#  address: 172.31.182.142
+
+spring:
+  application:
+    name: sscp-antipass
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+    default-property-inclusion: non_null
+  profiles:
+    active: dev
+  redis:
+    database: 0
+    host: 47.244.5.51
+    port: 6379
+    password:       # 密码（默认为空）
+    timeout: 20000   # 连接超时时长（毫秒）
+    #    lettuce:
+    #      pool:
+    #        min-idle: 8
+    #        max-active: 1000
+    #        max-wait: -1ms
+    #        max-idle: 16
+    jedis:
+      pool:
+        max-active: 200  # 连接池最大连接数（使用负值表示没有限制）
+        max-wait: -1ms    # 连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-idle: 16      # 连接池中的最大空闲连接
+        min-idle: 8       # 连接池中的最小空闲连接
+
+  #  kafka:
+  #    producer:
+  #      bootstrap-servers: 47.52.25.80:9092
+  #      retries: 0
+  #      batch-size: 16384
+  #      buffer-memory: 33554432
+  ##      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+  ##      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #      tap-resp: sscp-journey-resp
+  #    consumer:
+  #      bootstrap-servers: 47.52.25.80:9092
+  #      group-id: journey-group
+  #      auto-offset-reset: earliest
+  #      enable-auto-commit: true
+  #      auto-commit-interval: 100
+  ##      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  ##      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  #      session-timeout: 6000
+  #      concurrency: 1
+  #      topic:
+  #        default: second
+  #        tap-req: sscp-journey-req
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://47.244.5.51:3306/transaction?serverTimezone=Hongkong&allowMultiQueries=true&useUnicode=true&characterEncoding=UTF-8&useSSL=false
+    username: transactiondb
+    password: pcidata_2019
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 10    # 初始化连接数
+      min-idle: 10        # 最小空闲连接
+      max-active: 100     # 最大活动链接
+      max-wait: 60000     # 最大等待时间(毫秒)
+      test-while-idle: true
+      test-on-borrow: false # 获取连接时测试是否可用
+      test-on-return: false
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      min-evictable-idle-time-millis: 300000
+
+mybatis:
+  type-aliases-package: com.pci.antipass.entity.sql
+  mapper-locations: classpath:mappers/*.xml
+
+eureka:
+  #  client:
+  #    service-url:
+  ##      defaultZone: http://localhost:8800/eureka/
+  #      defaultZone: http://47.52.25.80:8761/eureka/
+  #  #      defaultZone: http://172.20.14.118:8778/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.cloud.client.ip-address}:${server.port}
+#    ip-address: ${server.address}
+#    instance-id: ${server.address}:${server.port}
+logging:
+  level:
+    org.springframework.cloud.netflix.feign: debug
+    com.pci.antipass.client.*: debug
+
+ribbon:
+  # 连接超时时间
+  ConnectTimeout: 30000
+  # 通信超时时间
+  ReadTimeout: 30000
+  # 是否对所有操作重试
+  OkToRetryOnAllOperations: true
+  # 同一服务不同实例的重试次数
+  MaxAutoRetriesNextServer: 2
+  # 同一实例的重试次数
+  MaxAutoRetries: 1
+
+
+param:
+  # antipass版本号
+  version: 1.0.0.20190321
+  # 设置GRK内不许重复刷码是：1秒内（等于1秒）
+  repeatTapDenyingInterval: 1000
+  # 多少分钟内允许多次进站的时间区间是：0~2分钟（等于2分钟）
+  multiEntryAllowInterval: 720000
+  # 允许多次进站的次数是：1次
+  multiEntryTapLimit: 1
+  # 相同站点不允许多次进站的时间区间是：2~30分钟（等于30分钟）
+  multiEntryDenyInterval: 1800000
+  # 不同站点不允许多次进站的的时间区间是：0~15分钟（等于15分钟）
+  multiEntryTimeApartBtwStations: 900000
+  # 乘客在付费区补录进站记录后，允许乘客离开车站的缓冲时间区间是：0~16分钟（等于16分钟）
+  manualFixExitBuffer: 960000
+  # 禁止乘客手工补录进站，刷码出站后，继续补录进站的时间区间是：0~6分钟（等于6分钟）
+  manualFixDenyingInterval: 360000
+  # nak有效期，nak上传后，6分钟内有效
+  nakValidityPeriod: 360000
+  # 同站进出最小时间间隔：1分钟
+  sameStationInboundAndOutboundMinimumInterval: 60000
+  # 禁止乘客手工补录进站，没有出站，继续补录进站的时间区间是：0-16分钟（等于16分钟）
+  manualContinuousFixDenyingInterval: 960000
+  # 允许乘客撤销的时间阈值(可撤销有效期，即多久之内可以撤销。30分钟有效期)
+  reversibleValidityPeriod: 1800000
+  # 待在站内的最小时间
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
